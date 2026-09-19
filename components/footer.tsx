@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Lock } from "lucide-react";
 import { cookies } from "next/headers";
 import { getDb, sortBy } from "@/lib/db";
 import { t } from "@/lib/i18n";
@@ -82,9 +83,12 @@ export default function Footer() {
           <span className="flex gap-6">
             <Link href="/privacy" className="transition hover:text-sky">{tr("footer.privacy")}</Link>
             <Link href="/terms" className="transition hover:text-sky">{tr("footer.terms")}</Link>
+            <Link href="/admin" className="inline-flex items-center gap-1 text-muted/60 transition hover:text-sky" rel="nofollow">
+              <Lock className="h-3 w-3" aria-hidden /> Admin
+            </Link>
           </span>
         </div>
       </div>
     </footer>
   );
-}
+} change it
