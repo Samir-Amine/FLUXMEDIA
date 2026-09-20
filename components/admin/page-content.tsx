@@ -220,19 +220,96 @@ export function SocialLinksAdmin({ initial }: { initial: SocialLink[] }) {
   const toast = useToast();
   const router = useRouter();
 
-  const move = async (i: number, d: -1 | 1) => { const n = [...list]; [n[i], n[i + d]] = [n[i + d], n[i]]; setList(n); await api("socialLinks", "PATCH", { order: n.map((x) => x.id) }); router.refresh(); };
-  const toggle = async (l: SocialLink) => { await api("socialLinks", "PUT", { id: l.id, active: !l.active }); setList((s) => s.map((x) => (x.id === l.id ? { ...x, active: !x.active } : x))); router.refresh(); };
-  const save = async () => {
-    if (!edit) return;
-    setSaving(true);
-    try {
-      if (edit.id) { await api("socialLinks", "PUT", edit); setList((s) => s.map((x) => (x.id === edit.id ? edit : x))); }
-      else { const c = await api("socialLinks", "POST", edit); setList((s) => [...s, c]); }
-      toast("Link saved. Social page updated."); setEdit(null); router.refresh();
-    } catch (e) { toast((e as Error).message, "err"); }
-    setSaving(false);
-  };
+  const move = async (i: number, d: -1 | 1) => {
+  const n = [...list];
 
+  [n[i], n[i + d]] = [n[i + d], n[i]];
+
+  setList(n);
+
+  try {
+    await api("socialLinks", "PATCH", {
+      order: n.map((x) => x.id),
+    });
+  } catch (e) {
+    toast(
+      e instanceof Error ? e.message : "Failed to reorder links",
+      "err"
+    );
+
+    // Restore original order if API fails
+    setList([...list]);
+  }
+};
+const toggle = async (l: SocialLink) => {
+  const active = !l.active;
+
+  try {
+    await api("socialLinks", "PUT", {
+      id: l.id,
+      active,
+    });
+
+    setList((current) =>
+      current.map((item) =>
+        item.id === l.id
+          ? { ...item, active }
+          : item
+      )
+    );
+  } catch (e) {
+    toast(
+      e instanceof Error ? e.message : "Failed to update link",
+      "err"
+    );
+  }
+};
+  const save = async () => {
+  if (!edit) return;
+
+  setSaving(true);
+
+  try {
+    if (edit.id) {
+      // Update existing link
+      await api("socialLinks", "PUT", edit);
+
+      setList((current) =>
+        current.map((item) =>
+          item.id === edit.id ? edit : item
+        )
+      );
+    } else {
+      // Create new link
+      const created = await api("socialLinks", "POST", {
+        platform: edit.platform,
+        name: edit.name,
+        username: edit.username,
+        description: edit.description,
+        url: edit.url,
+        active: edit.active,
+        order: edit.order,
+      });
+
+      setList((current) => [...current, created]);
+    }
+
+    toast("Link saved. Social page updated.");
+
+    // Close modal only.
+    setEdit(null);
+
+    // Do NOT refresh the server page here.
+    // The local state is already updated.
+  } catch (e) {
+    toast(
+      e instanceof Error ? e.message : "Failed to save link",
+      "err"
+    );
+  } finally {
+    setSaving(false);
+  }
+};
   return (
     <>
       <PageHeader title="Social Links" sub="Powers the public /social page and the footer." actions={<button className="btn-brand !py-2.5" onClick={() => setEdit({ id: "", platform: "instagram", name: "", username: "", description: empty(), url: "", active: true, order: list.length + 1 })}><Plus className="h-4 w-4" /> Add platform</button>} />
@@ -247,8 +324,29 @@ export function SocialLinksAdmin({ initial }: { initial: SocialLink[] }) {
             </div>
             <Toggle label="" checked={l.active} onChange={() => toggle(l)} />
             <button className="btn-ghost !py-2 !text-xs" onClick={() => setEdit(l)}>Edit</button>
-            <DeleteButton label="" what={l.name} onConfirm={async () => { await api("socialLinks", "DELETE", undefined, `?id=${l.id}`); setList((s) => s.filter((x) => x.id !== l.id)); router.refresh(); }} />
-          </div>
+            <DeleteButton
+  label=""
+  what={l.name}
+  onConfirm={async () => {
+    try {
+      await api(
+        "socialLinks",
+        "DELETE",
+        undefined,
+        `?id=${encodeURIComponent(l.id)}`
+      );
+
+      setList((current) =>
+        current.filter((item) => item.id !== l.id)
+      );
+    } catch (e) {
+      toast(
+        e instanceof Error ? e.message : "Failed to delete link",
+        "err"
+      );
+    }
+  }}
+/></div>
         ))}
       </div>
       <Modal open={!!edit} onClose={() => setEdit(null)} title={edit?.id ? "Edit link" : "Add platform"}>
