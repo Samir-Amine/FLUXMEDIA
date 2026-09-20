@@ -7,7 +7,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * We intentionally do not redirect /admin/login just because a cookie exists,
  * because an expired/invalid cookie can otherwise create a redirect loop.
  */
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   const isLogin = pathname === "/admin/login";

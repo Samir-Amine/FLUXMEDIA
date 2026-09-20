@@ -1,7 +1,8 @@
 import type { Locale, ML } from "./types";
 
-export const uid = () =>
-  Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
+export function uid(): string {
+  return crypto.randomUUID();
+}
 
 export const slugify = (s: string) =>
   s

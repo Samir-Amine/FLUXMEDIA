@@ -58,7 +58,7 @@ export async function POST(req: Request, { params }: { params: { collection: str
   if (!isCol(c)) return NextResponse.json({ error: "Not a collection" }, { status: 400 });
   const body = await req.json();
   const record = { ...body, id: uid() };
-  mutateDb((db) => {
+  await mutateDb((db) => {
     const arr = db[c] as unknown as Record<string, unknown>[];
     if (record.order === undefined && arr.length && "order" in (arr[0] || {})) {
       record.order = Math.max(0, ...arr.map((r) => Number(r.order) || 0)) + 1;
@@ -81,7 +81,7 @@ export async function PUT(req: Request, { params }: { params: { collection: stri
   if (!isCol(c)) return NextResponse.json({ error: "Unknown collection" }, { status: 404 });
   if (!body.id) return NextResponse.json({ error: "id required" }, { status: 400 });
   let found = false;
-  mutateDb((db) => {
+  await mutateDb((db) => {
     const arr = db[c] as unknown as Record<string, unknown>[];
     const i = arr.findIndex((r) => r.id === body.id);
     if (i >= 0) { arr[i] = { ...arr[i], ...body }; found = true; }
@@ -96,7 +96,7 @@ export async function PATCH(req: Request, { params }: { params: { collection: st
   const c = params.collection;
   if (!isCol(c)) return NextResponse.json({ error: "Not a collection" }, { status: 400 });
   const { order } = (await req.json()) as { order: string[] };
-  mutateDb((db) => {
+  await mutateDb((db) => {
     const arr = db[c] as unknown as Record<string, unknown>[];
     order.forEach((id, idx) => {
       const r = arr.find((x) => x.id === id);
@@ -113,7 +113,7 @@ export async function DELETE(req: Request, { params }: { params: { collection: s
   if (!isCol(c)) return NextResponse.json({ error: "Not a collection" }, { status: 400 });
   const id = new URL(req.url).searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
-  mutateDb((db) => {
+  await mutateDb((db) => {
     (db as unknown as Record<string, Record<string, unknown>[]>)[c] = (db[c] as unknown as Record<string, unknown>[]).filter((r) => r.id !== id);
   });
   revalidateAll();
