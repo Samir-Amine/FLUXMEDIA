@@ -78,13 +78,10 @@ export default async function Footer() {
 
       <div className="border-t border-line/10">
         <div className="container-x flex flex-col items-center justify-between gap-3 py-6 text-xs text-muted/80 sm:flex-row">
-          <span>© {new Date().getFullYear()} FLUXMEDIA. {tr("footer.rights")}</span>
+          <span><Link href="/admin" className="inline-flex items-center gap-1 text-muted/60 transition hover:text-sky" rel="nofollow">©</Link> {new Date().getFullYear()} FLUXMEDIA. {tr("footer.rights")}</span>
           <span className="flex gap-6">
             <Link href="/privacy" className="transition hover:text-sky">{tr("footer.privacy")}</Link>
             <Link href="/terms" className="transition hover:text-sky">{tr("footer.terms")}</Link>
-            <Link href="/admin" className="inline-flex items-center gap-1 text-muted/60 transition hover:text-sky" rel="nofollow">
-              Admin
-            </Link>
           </span>
         </div>
       </div>
