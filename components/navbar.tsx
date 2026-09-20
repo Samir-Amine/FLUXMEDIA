@@ -11,10 +11,11 @@ import { cx } from "@/lib/utils";
 
 export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
   const { locale, setLocale } = useI18n();
+
   return (
     <div
       className={cx(
-        "flex items-center rounded-full border border-line/20 bg-surface2/70 p-1",
+        "inline-flex items-center rounded-full border border-line/20 bg-surface2/70 p-0.5",
         compact && "w-full justify-center"
       )}
       role="group"
@@ -26,8 +27,10 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
           onClick={() => setLocale(l)}
           aria-pressed={locale === l}
           className={cx(
-            "rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide transition",
-            locale === l ? "bg-brand text-white shadow-glow-sm" : "text-muted hover:text-ink"
+            "rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide transition",
+            locale === l
+              ? "bg-brand text-white shadow-glow-sm"
+              : "text-muted hover:text-ink"
           )}
         >
           {LOCALE_LABEL[l]}
